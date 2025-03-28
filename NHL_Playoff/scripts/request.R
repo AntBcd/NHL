@@ -1,3 +1,10 @@
+### This file only goal is to fetch the data from the API and transform it into
+# a workable R format.
+
+# DONE: Function to extract and format standings characteristics.
+# TODO: Function to extract and format standings stats.
+
+
 library(httr2)
 library(lubridate)
 library(dplyr)
@@ -48,7 +55,8 @@ rq <- request(base_url)
 
 annees <- c()
 
-for (x in standsChar$standingsEnd)
+#for (x in standsChar$standingsEnd)
+x <- "2023-04-14"
     {
     if ((year(as.Date(x)) >= startYear) & (year(as.Date(x)) <= endYear)) {
         print(rq)
@@ -59,17 +67,39 @@ for (x in standsChar$standingsEnd)
     }
     }
 
-for (i in years) {
 
-rq <- rq %>% req_url_path(standEnd)
-
-resp <-  req_perform(rq)
-resp %>% resp_status_desc()
-
-stands <- resp_body_json(resp)
-}
 class(stands$standings)
+df <- data.frame()
+df <- sapply(1:length(stands$standings), function(x) rbind(df, as.data.frame(stands$standings[[x]])))
 
-df <- sapply(1:ncol(df), function(x) rbind(stands$standings)
 
+for (i in 1:length(stands$standings)) {
+    print(dim(as.data.frame(stands$standings[[i]])))
+}
+
+dim(df)
+class(df)
+length(df)
+cbind(1:ncol(as.data.frame(stands$standings[[2]])), colnames(as.data.frame(stands$standings[[2]])))
 df <- unlist(stands$standings)
+
+# There's a mismatching number of columns which'll have to be fixed to transform
+# the data into a usable data frame.
+for (i in 1:length(stands$standings)) {
+    print(dim(as.data.frame(stands$standings[[i]])))
+}
+Bruins <- as.data.frame(stands$standings[[1]])
+Canes <- as.data.frame(stands$standings[[2]])
+Flames <- as.data.frame(stands$standings[[16]])
+
+# One difference comes from teams with a location, like Carolina, that have
+# a different name in French and English (Caroline/Carolina) while other teams,
+# like Boston, have the same 'placename' in French and English (Boston). 'placeName'
+# is only called 'default' for teams with no French translation.
+
+Canes[colnames(Canes) %in% colnames(Bruins)]
+
+# The other difference (for teams with 81 columns) is that only the teams that
+# made the playoffs have 'clinchIndicator' column.
+Bruins[!colnames(Bruins) %in% colnames(Flames)]
+# cbind(1:ncol(as.data.frame(stands$standings[[2]])), colnames(as.data.frame(stands$standings[[2]])), c(colnames(Bruins), NA))
