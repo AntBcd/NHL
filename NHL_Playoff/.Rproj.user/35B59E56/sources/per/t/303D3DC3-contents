@@ -1,0 +1,15 @@
+library(httr2)
+
+base_url <- "https://api-web.nhle.com/"
+
+rq <- request(base_url)
+
+rq <- rq %>% req_url_path("v1/standings-season")
+
+resp <-  req_perform(rq)
+resp %>% resp_status_desc()
+
+standings <- resp_body_json(resp)
+
+standings$seasons[[89]]$standingsEnd
+
